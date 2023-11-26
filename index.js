@@ -31,13 +31,46 @@ async function run() {
     await client.connect();
 
     const packageCollection = client.db("travolDB").collection("packages");
+    const wishListCollection = client.db("travolDB").collection("wishList");
+    const tourGuideCollection = client.db("travolDB").collection("tourGuide");
+    const reviewCollection = client.db("travolDB").collection("review");
 
     app.get("/packages", async (req, res) => {
-        const cursor = packageCollection.find({});
-        const packages = await cursor.toArray();
-        res.send(packages);
-        });
+      const cursor = packageCollection.find({});
+      const packages = await cursor.toArray();
+      res.send(packages);
+    });
 
+    app.post("/addToWishlist", async (req, res) => {
+      const newWishList = req.body;
+      const result = await wishListCollection.insertOne(newWishList);
+      res.send(result);
+    });
+
+    app.get("/tourGuide", async (req, res) => {
+      const cursor = tourGuideCollection.find({});
+      const tourGuide = await cursor.toArray();
+      res.send(tourGuide);
+    });
+
+    app.post("/tourGuide", async (req, res) => {
+      const newTourGuide = req.body;
+      const result = await tourGuideCollection.insertOne(newTourGuide);
+      res.send(result);
+    });
+
+    app.get("/review", async (req, res) => {
+      const cursor = reviewCollection.find({});
+      const review = await cursor.toArray();
+      res.send(review);
+    });
+
+    app.get("/review/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const review = await reviewCollection.findOne(query);
+      res.send(review);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
