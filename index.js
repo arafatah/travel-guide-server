@@ -47,6 +47,41 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/wishlist/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const wishList = await wishListCollection.find(query).toArray();
+      res.send(wishList);
+    });
+
+    app.delete("/wishlist/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await wishListCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.get("/wishlist", async (req, res) => {
+      const cursor = wishListCollection.find({});
+      const wishList = await cursor.toArray();
+      res.send(wishList);
+    });
+
+    app.get("/wishlist/new/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const wishList = await wishListCollection.findOne(query);
+      res.send(wishList);
+    });
+
+    app.get("/review/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const review = await reviewCollection.findOne(query);
+      res.send(review);
+    });
+
     app.get("/tourGuide", async (req, res) => {
       const cursor = tourGuideCollection.find({});
       const tourGuide = await cursor.toArray();
@@ -65,11 +100,10 @@ async function run() {
       res.send(review);
     });
 
-    app.get("/review/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const review = await reviewCollection.findOne(query);
-      res.send(review);
+    app.post("/review", async (req, res) => {
+      const newReview = req.body;
+      const result = await reviewCollection.insertOne(newReview);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
