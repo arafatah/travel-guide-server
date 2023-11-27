@@ -34,10 +34,72 @@ async function run() {
     const wishListCollection = client.db("travolDB").collection("wishList");
     const tourGuideCollection = client.db("travolDB").collection("tourGuide");
     const reviewCollection = client.db("travolDB").collection("review");
+    const bookingCollection = client.db("travolDB").collection("booking");
+    const userCollection = client.db("travolDB").collection("users");
 
+
+    // User section
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const userExist = await userCollection.findOne(query);
+      if (userExist) {
+        return res.send({message: "User already exist", insertedId: null});
+      } else {
+        const result = await userCollection.insertOne(user);
+        res.send({message: "User created successfully", result});
+      }
+    });
+
+    app.get("/users", async (req, res) => {
+      const cursor = userCollection.find({});
+      const users = await cursor.toArray();
+      res.send(users);
+    });
+    // Booking section
+    app.get("/booking", async (req, res) => {
+      const cursor = bookingCollection.find({});
+      const booking = await cursor.toArray();
+      res.send(booking);
+    });
+
+    app.post("/booking", async (req, res) => {
+      const newBooking = req.body;
+      const result = await bookingCollection.insertOne(newBooking);
+      res.send(result);
+    });
+
+    app.get("/booking/:touristEmail", async (req, res) => {
+      const touristEmail = req.params.touristEmail;
+      const query = { touristEmail: touristEmail };
+      const booking = await bookingCollection.find(query).toArray();
+      res.send(booking);
+    });
+
+    app.get("/booking/new/:selectedGuide", async (req, res) => {
+      const selectedGuide = req.params.selectedGuide;
+      const query = { selectedGuide: selectedGuide };
+      const booking = await bookingCollection.find(query).toArray();
+      res.send(booking);
+    });
+
+    // Package section
     app.get("/packages", async (req, res) => {
       const cursor = packageCollection.find({});
       const packages = await cursor.toArray();
+      res.send(packages);
+    });
+
+    app.post("/packages", async (req, res) => {
+      const newPackage = req.body;
+      const result = await packageCollection.insertOne(newPackage);
+      res.send(result);
+    });
+
+    app.get("/packages/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const packages = await packageCollection.findOne(query);
       res.send(packages);
     });
 
@@ -47,6 +109,7 @@ async function run() {
       res.send(result);
     });
 
+    // Wishlist section
     app.get("/wishlist/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
@@ -75,16 +138,25 @@ async function run() {
       res.send(wishList);
     });
 
-    app.get("/review/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const review = await reviewCollection.findOne(query);
-      res.send(review);
-    });
-
+    
+    // Tour Guide section
     app.get("/tourGuide", async (req, res) => {
       const cursor = tourGuideCollection.find({});
       const tourGuide = await cursor.toArray();
+      res.send(tourGuide);
+    });
+
+    app.get("/tourGuide/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const tourGuide = await tourGuideCollection.findOne(query);
+      res.send(tourGuide);
+    });
+
+    app.get("/tourGuide/new/:name", async (req, res) => {
+      const name = req.params.name;
+      const query = { name: name };
+      const tourGuide = await tourGuideCollection.findOne(query);
       res.send(tourGuide);
     });
 
@@ -94,6 +166,9 @@ async function run() {
       res.send(result);
     });
 
+
+
+    // Story section
     app.get("/review", async (req, res) => {
       const cursor = reviewCollection.find({});
       const review = await cursor.toArray();
@@ -104,6 +179,13 @@ async function run() {
       const newReview = req.body;
       const result = await reviewCollection.insertOne(newReview);
       res.send(result);
+    });
+
+    app.get("/review/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const review = await reviewCollection.findOne(query);
+      res.send(review);
     });
 
     // Send a ping to confirm a successful connection
