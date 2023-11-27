@@ -56,6 +56,31 @@ async function run() {
       const users = await cursor.toArray();
       res.send(users);
     });
+
+    app.patch("/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc ={
+        $set: {
+          role: "Admin"
+        }
+      }
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    app.patch("/users/guide/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc ={
+        $set: {
+          role: "Tour Guide"
+        }
+      }
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     // Booking section
     app.get("/booking", async (req, res) => {
       const cursor = bookingCollection.find({});
