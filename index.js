@@ -122,7 +122,7 @@ async function run() {
       res.send({ tourGuide });
     });
 
-    app.patch("/users/admin/:id", async (req, res) => {
+    app.patch("/users/admin/:id",verifyToken, verifyAdmin,  async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
@@ -134,7 +134,7 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/users/guide/:id", async (req, res) => {
+    app.patch("/users/guide/:id",verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
@@ -147,19 +147,19 @@ async function run() {
     });
 
     // Booking section
-    app.get("/booking", async (req, res) => {
+    app.get("/booking",verifyToken, async (req, res) => {
       const cursor = bookingCollection.find({});
       const booking = await cursor.toArray();
       res.send(booking);
     });
 
-    app.post("/booking", async (req, res) => {
+    app.post("/booking",verifyToken, async (req, res) => {
       const newBooking = req.body;
       const result = await bookingCollection.insertOne(newBooking);
       res.send(result);
     });
 
-    app.patch("/booking/accept/:id", async (req, res) => {
+    app.patch("/booking/accept/:id",verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
@@ -171,7 +171,7 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/booking/reject/:id", async (req, res) => {
+    app.patch("/booking/reject/:id",verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
@@ -183,18 +183,25 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/booking/:touristEmail", async (req, res) => {
+    app.get("/booking/:touristEmail",verifyToken, async (req, res) => {
       const touristEmail = req.params.touristEmail;
       const query = { touristEmail: touristEmail };
       const booking = await bookingCollection.find(query).toArray();
       res.send(booking);
     });
 
-    app.get("/booking/new/:selectedGuide", async (req, res) => {
+    app.get("/booking/new/:selectedGuide",verifyToken, async (req, res) => {
       const selectedGuide = req.params.selectedGuide;
       const query = { selectedGuide: selectedGuide };
       const booking = await bookingCollection.find(query).toArray();
       res.send(booking);
+    });
+
+    app.delete("/booking/:id",verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
     });
 
     // Package section
@@ -204,7 +211,7 @@ async function run() {
       res.send(packages);
     });
 
-    app.post("/packages", async (req, res) => {
+    app.post("/packages",verifyToken,verifyAdmin, async (req, res) => {
       const newPackage = req.body;
       const result = await packageCollection.insertOne(newPackage);
       res.send(result);
@@ -217,34 +224,34 @@ async function run() {
       res.send(packages);
     });
 
-    app.post("/addToWishlist", async (req, res) => {
+    app.post("/addToWishlist",verifyToken, async (req, res) => {
       const newWishList = req.body;
       const result = await wishListCollection.insertOne(newWishList);
       res.send(result);
     });
 
     // Wishlist section
-    app.get("/wishlist/:email", async (req, res) => {
+    app.get("/wishlist/:email",verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const wishList = await wishListCollection.find(query).toArray();
       res.send(wishList);
     });
 
-    app.delete("/wishlist/:id", async (req, res) => {
+    app.delete("/wishlist/:id",verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await wishListCollection.deleteOne(query);
       res.send(result);
     });
 
-    app.get("/wishlist", async (req, res) => {
+    app.get("/wishlist",verifyToken, async (req, res) => {
       const cursor = wishListCollection.find({});
       const wishList = await cursor.toArray();
       res.send(wishList);
     });
 
-    app.get("/wishlist/new/:id", async (req, res) => {
+    app.get("/wishlist/new/:id", verifyToken,async (req, res) => {
       const id = req.params.id;
       console.log(id);
       const query = { _id: new ObjectId(id) };
@@ -273,7 +280,7 @@ async function run() {
       res.send(tourGuide);
     });
 
-    app.post("/tourGuide", async (req, res) => {
+    app.post("/tourGuide",verifyToken, async (req, res) => {
       const newTourGuide = req.body;
       const result = await tourGuideCollection.insertOne(newTourGuide);
       res.send(result);
@@ -286,7 +293,7 @@ async function run() {
       res.send(review);
     });
 
-    app.post("/review", async (req, res) => {
+    app.post("/review",verifyToken, async (req, res) => {
       const newReview = req.body;
       const result = await reviewCollection.insertOne(newReview);
       res.send(result);
