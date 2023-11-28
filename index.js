@@ -159,6 +159,30 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/booking/accept/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "Approved",
+        },
+      };
+      const result = await bookingCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    app.patch("/booking/reject/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "Rejected",
+        },
+      };
+      const result = await bookingCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     app.get("/booking/:touristEmail", async (req, res) => {
       const touristEmail = req.params.touristEmail;
       const query = { touristEmail: touristEmail };
