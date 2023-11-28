@@ -41,57 +41,95 @@ async function run() {
     // jwt related api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET,{
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1h",
       });
-      res.send({token});
-    })
+      res.send({ token });
+    });
 
     // middleware
     const verifyToken = (req, res, next) => {
-      console.log("in ths token bar" ,req.headers.authorization);
-     if(!req.headers.authorization){
-        return res.status(401).send({message: "Forbidden request"});
-      } 
+      console.log("in ths token bar", req.headers.authorization);
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: "Forbidden request" });
+      }
       const token = req.headers.authorization.split(" ")[1];
       jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-        if(err){
-          return res.status(403).send({message: "Invalid token"});
+        if (err) {
+          return res.status(403).send({ message: "Invalid token" });
         }
         req.decoded = decoded;
         next();
-      })
+      });
+    };
+
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (user?.role === "Admin") {
+        next();
+      } else {
+        return res.status(401).send({ message: "forbidden access" });
+      }
     }
 
-
     // User section
-    app.post("/users",  async (req, res) => {
+    app.post("/users", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
       const userExist = await userCollection.findOne(query);
       if (userExist) {
-        return res.send({message: "User already exist", insertedId: null});
+        return res.send({ message: "User already exist", insertedId: null });
       } else {
         const result = await userCollection.insertOne(user);
-        res.send({message: "User created successfully", result});
+        res.send({ message: "User created successfully", result });
       }
     });
 
-    app.get("/users",verifyToken, async (req, res) => {
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       // console.log(req.headers);
       const cursor = userCollection.find({});
       const users = await cursor.toArray();
       res.send(users);
     });
 
+    app.get("/users/admin/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(401).send({ message: "Invalid token" });
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let Admin = false;
+      if (user) {
+        Admin = user?.role === "Admin";
+      }
+      res.send({ Admin });
+    });
+
+    app.get("/users/tourGuide/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(401).send({ message: "Invalid token" });
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let tourGuide = false;
+      if (user) {
+        tourGuide = user?.role === "Tour Guide";
+      }
+      res.send({ tourGuide });
+    });
+
     app.patch("/users/admin/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
-      const updateDoc ={
+      const updateDoc = {
         $set: {
-          role: "Admin"
-        }
-      }
+          role: "Admin",
+        },
+      };
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
@@ -99,11 +137,11 @@ async function run() {
     app.patch("/users/guide/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
-      const updateDoc ={
+      const updateDoc = {
         $set: {
-          role: "Tour Guide"
-        }
-      }
+          role: "Tour Guide",
+        },
+      };
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
@@ -190,7 +228,6 @@ async function run() {
       res.send(wishList);
     });
 
-    
     // Tour Guide section
     app.get("/tourGuide", async (req, res) => {
       const cursor = tourGuideCollection.find({});
@@ -217,8 +254,6 @@ async function run() {
       const result = await tourGuideCollection.insertOne(newTourGuide);
       res.send(result);
     });
-
-
 
     // Story section
     app.get("/review", async (req, res) => {
