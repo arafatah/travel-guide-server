@@ -29,7 +29,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const packageCollection = client.db("travolDB").collection("packages");
     const wishListCollection = client.db("travolDB").collection("wishList");
@@ -49,7 +49,7 @@ async function run() {
 
     // middleware
     const verifyToken = (req, res, next) => {
-      console.log("in ths token bar", req.headers.authorization);
+      // console.log("in ths token bar", req.headers.authorization);
       if (!req.headers.authorization) {
         return res.status(401).send({ message: "Forbidden request" });
       }
@@ -251,9 +251,9 @@ async function run() {
       res.send(wishList);
     });
 
-    app.get("/wishlist/new/:id", verifyToken,async (req, res) => {
+    app.get("/wishlist/new/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      // console.log(id);
       const query = { _id: new ObjectId(id) };
       const wishList = await wishListCollection.findOne(query);
       res.send(wishList);
@@ -307,10 +307,10 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
